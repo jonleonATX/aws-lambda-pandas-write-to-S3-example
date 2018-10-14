@@ -1,0 +1,52 @@
+
+service: writefile # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: python3.6
+  profile: ${file(../config.${self:provider.stage}.json):writefile.profile}
+  stage: dev
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 's3:PutObject'
+        # - 'S3:DeleteObject'
+      Resource:
+        - Fn::Join:
+          - ''
+          - - ${self:custom.writetobucketArn}
+            - '/*'
+      # Resource: "*"
+   # - Effect: "Allow"
+   #   Action: "lambda:InvokeFunction"
+   #   Resource: "*"
+   # - Effect: "Allow"
+   #   Action: "dynamodb:PutItem"
+   #   Resource: ${self:custom.breakoutTableArn}
+
+  environment:
+    WRITETO_BUCKET_NAME: ${file(../config.${self:provider.stage}.json):writefile.bucketfordata}
+
+functions:
+  write_file_to_s3:
+    handler: writefiletos3.write_file_to_s3
+    description: lambda function that writes to temp directory then to s3
+    name: ${self:service}-${self:provider.stage}-write_file_to_s3
+
+custom:
+  # arn:aws:s3:::bucketnamehere
+  writetobucketArn:
+    Fn::Join:
+      - ':'
+      - - arn
+        - aws
+        - s3
+        - ''
+        - ''
+        - ${file(../config.${self:provider.stage}.json):writefile.bucketfordata}
+  pythonRequirements:
+    pythonBin: /usr/local/bin/python3.6m
+
+plugins:
+  - serverless-python-requirements
