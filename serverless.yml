@@ -17,13 +17,6 @@ provider:
           - ''
           - - ${self:custom.writetobucketArn}
             - '/*'
-      # Resource: "*"
-   # - Effect: "Allow"
-   #   Action: "lambda:InvokeFunction"
-   #   Resource: "*"
-   # - Effect: "Allow"
-   #   Action: "dynamodb:PutItem"
-   #   Resource: ${self:custom.breakoutTableArn}
 
   environment:
     WRITETO_BUCKET_NAME: ${file(../config.${self:provider.stage}.json):writefile.bucketfordata}
@@ -33,6 +26,14 @@ functions:
     handler: writefiletos3.write_file_to_s3
     description: lambda function that writes to temp directory then to s3
     name: ${self:service}-${self:provider.stage}-write_file_to_s3
+  download_and_write_file_to_s3:
+    handler: writefiletos3.download_and_write_file_to_s3
+    description: lambda function that downloads an image from url then writes to temp directory then to s3
+    name: ${self:service}-${self:provider.stage}-download_and_write_file_to_s3
+  decode_base64_from_web_and_write_file_to_s3:
+    handler: writefiletos3.decode_base64_from_web_and_write_file_to_s3
+    description: lambda function that downloads a base64 imagestring, decodes, then writes to s3
+    name: ${self:service}-${self:provider.stage}-decode_base64_from_web_and_write_file_to_s3
 
 custom:
   # arn:aws:s3:::bucketnamehere
